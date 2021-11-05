@@ -104,7 +104,6 @@ int main(int argc, char* argv[])
                       << std::endl;
             // Run the Playfair cipher (using the specified key and encrypt/decrypt flag) on the input text
             PlayfairCipher cipher{settings.cipherKey};
-            cipher.setKey("Hi there, I'm 22!");
             outputText = cipher.applyCipher(inputText, settings.cipherMode);
             break;
         }
