@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <string>
+#include <algorithm>
+#include <cctype>
 
 PlayfairCipher::PlayfairCipher(const std::string& key) : key_{""}
 {
@@ -15,13 +17,30 @@ void PlayfairCipher::setKey(const std::string& key)
     key_ = key;
 
     // Append the alphabet
+    key_ += alphabet_;
+
+    // Remove non-alpha characters
+    key_.erase(std::remove_if(std::begin(key_), std::end(key_),
+                              [](char c) {return !std::isalpha(c); }),
+               std::end(key_));
 
     // Make sure the key is upper case
-    // Remove non-alpha characters
+    std::transform(std::begin(key_), std::end(key_), std::begin(key_), ::toupper);
+
     // Change J -> I
-
+    std::transform(std::begin(key_), std::end(key_), std::begin(key_),
+                   [](char c) {if (c == 'J'){return 'I';} else {return c;}});
+    
     // Remove duplicated letters
-
+    std::string encounteredLetters{""};
+    key_.erase(std::remove_if(std::begin(key_), std::end(key_),
+                              [&encounteredLetters](char c){bool encountered{encounteredLetters.find(c) != encounteredLetters.npos};
+                                                            if (!encountered) {
+                                                                encounteredLetters += c;
+                                                            }
+                                                            return encountered;}),
+               std::end(key_));
+    std::cout << "Key = " << key_ << std::endl;
     // Store the coords of each letter
 
     // Store the playfair cihper key map

@@ -44,12 +44,10 @@ class PlayfairCipher {
 
   private:
     /// The alphabet - used to determine the cipher character given the plain character and the key
-    const std::vector<char> alphabet_{
-        'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-        'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'};
+    const std::string alphabet_{"ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
 
     /// The size of the alphabet
-    const std::size_t alphabetSize_{alphabet_.size()};
+    const std::size_t alphabetSize_{alphabet_.length()};
 
     /// The cipher key
     std::string key_{0};
