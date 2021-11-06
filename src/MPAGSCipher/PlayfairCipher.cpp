@@ -7,7 +7,6 @@
 #include <cctype>
 #include <map>
 #include <utility>
-#include <cmath>
 
 PlayfairCipher::PlayfairCipher(const std::string& key) : key_{""}
 {
@@ -46,68 +45,112 @@ void PlayfairCipher::setKey(const std::string& key)
         }
     };
     key_.erase(std::remove_if(std::begin(key_), std::end(key_), detectDuplicates),
-               std::end(key_));   
-    
+               std::end(key_));
+
+
     // Store the coords of each letter and store the playfair cipher key map
     // Create a new label for each type – could also use 'typedef'
-    using coords = std::pair< int, int >;
-    using Letter2Coords = std::map< char, coords >;
-    using Coords2Letter = std::map< coords, char >;
-
-    // Create an instance of each map
-    Letter2Coords coordinates;
-    Coords2Letter letter;
+    // using PlayfairCoords = std::pair< size_t, size_t >;
 
     // Loop over each letter, calculate the row and column numbers and then
     // store both the letter and a std::pair of the coordinates in each map.
     int count = 0;
     for (auto iter{std::begin(key_)}; iter != std::end(key_); ++iter){
-        coords c{floor(count/5), count%5};
-        std::pair<char, coords> p_l2c{*iter, c};
-        std::pair<coords, char> p_c2l{c, *iter};
-        coordinates.insert(p_l2c);
-        letter.insert(p_c2l);
+        PlayfairCoords c{count/5, count%5};
+        std::pair<char, PlayfairCoords> p_l2c{*iter, c};
+        std::pair<PlayfairCoords, char> p_c2l{c, *iter};
+        lookUpCoordinates_.insert(p_l2c);
+        lookUpLetter_.insert(p_c2l);
         count++;
-    }
-
-    // Checking everything is working
-    std::cout << "Original key: " << key << std::endl;
-    std::cout << "New key: " << key_ << std::endl;
-
-    std::cout << "Letter2Coords coordinates:" << std::endl;
-    for ( auto p : coordinates )
-    {
-        std::cout << p.first << " : [" << p.second.first << ", " << p.second.second << "]" << std::endl;
-    }
-
-    std::cout << "Coords2Letter letter:" << std::endl;
-    for ( auto p : letter )
-    {
-        std::cout << "[" << p.first.first << ", " << p.first.second << "] : " << p.second << std::endl;
     }
 
 }
 
-std::string PlayfairCipher::applyCipher(const std::string& inputText, const CipherMode cipherMode) const
+std::string PlayfairCipher::applyCipher(std::string& inputText, const CipherMode cipherMode) const
 {
-    // Change J → I
+    std::string processedInputText{""};
+    // Process inputText for encrytion
+    if (cipherMode == CipherMode::Encrypt) {
+        // Change J → I
+        std::transform(std::begin(inputText), std::end(inputText), std::begin(inputText),
+                        [](char c){return (c=='J' ? 'I' : c); });
 
-    // If repeated chars in a digraph add an X or Q if XX
+        // If repeated chars in a digraph add an X or Q if XX
+        for (size_t i{0}; i < inputText.length()-1; ++i) {
+            processedInputText += inputText[i];
+            if (inputText[i] == inputText[i+1]) {
+                if (inputText[i] == 'X') {
+                    processedInputText += 'Q';
+                } else {
+                    processedInputText += 'X';
+                }
+            }
+        }
+        processedInputText += inputText[inputText.length()-1];
 
-    // if the size of input is odd, add a trailing Z
+        // if the size of input is odd, add a trailing Z
+        if (processedInputText.length() % 2 != 0) {
+            processedInputText += 'Z';
+        }
+    }
+    // For decryption just use raw inputText
+    else {
+        processedInputText += inputText;
+    }
 
-    // Loop over the input in Digraphs
+    // Loop over the input in Digraphs, applying Playfair cipher
+    std::string outputText{""};
+        
+    for (auto iterLetterIn{std::begin(processedInputText)}; iterLetterIn != std::end(processedInputText); iterLetterIn+=2){
+        //// - Find the coords in the grid for each digraph
+        auto iterPairIn_i = lookUpCoordinates_.find(*iterLetterIn);
+        auto iterPairIn_iplus1 = lookUpCoordinates_.find(*(iterLetterIn+1));
+        PlayfairCoords coordsIn_i{(*iterPairIn_i).second};
+        PlayfairCoords coordsIn_iplus1{(*iterPairIn_iplus1).second};
 
-    // - Find the coords in the grid for each digraph
-    // - Apply the rules to these coords to get 'new' coords
-    // - Find the letter associated with the new coords
+        //// - Apply the rules to these coords to get 'new' coords
+        PlayfairCoords coordsOut_i{(*iterPairIn_i).second};
+        PlayfairCoords coordsOut_iplus1{(*iterPairIn_iplus1).second};
+        // 1. If letters are on the same row: Encrypt: replace with letter to the right, wrap to left if needed
+        //                                    Decrypt: replace with letter to the left, wrap to right if needed
+        if (coordsIn_i.first == coordsIn_iplus1.first) {
+            if (cipherMode == CipherMode::Encrypt) {
+                coordsOut_i.second = (coordsIn_i.second + 1) % 5;
+                coordsOut_iplus1.second = (coordsIn_iplus1.second + 1) % 5;
+            }
+            else {
+                coordsOut_i.second = (coordsIn_i.second - 1 + 5) % 5;
+                coordsOut_iplus1.second = (coordsIn_iplus1.second - 1 + 5) % 5;
+            }
+        }
+
+        // 2. If in same column: Encrypt: replace with letters directly below, wrap to top if needed
+        //                       Decrypt: replace with letters directly above, wrap to bottom if needed
+        else if (coordsIn_i.second == coordsIn_iplus1.second) {
+            if (cipherMode == CipherMode::Encrypt) {
+                coordsOut_i.first = (coordsIn_i.first + 1) % 5;
+                coordsOut_iplus1.first = (coordsIn_iplus1.first + 1) % 5;
+            }
+            else {
+                coordsOut_i.first = (coordsIn_i.first - 1 + 5) % 5;
+                coordsOut_iplus1.first = (coordsIn_iplus1.first - 1 + 5) % 5;
+            }
+        }
+
+        // 3. If they form a rectangle, replace with ones from corner on the same row (same for Encrypt/Decrypt)
+        else {
+            coordsOut_i.second = (coordsIn_iplus1.second);
+            coordsOut_iplus1.second = (coordsIn_i.second);
+        }
+
+        //// - Find the letter associated with the new coords
+        auto iterPairOut_i = lookUpLetter_.find(coordsOut_i);
+        auto iterPairOut_iplus1 = lookUpLetter_.find(coordsOut_iplus1);
+        outputText += (*iterPairOut_i).second;
+        outputText += (*iterPairOut_iplus1).second;
+
+    }
+
     // return the text
-    std::cout
-        << "PlayfairCipher.applyCipher("
-        << inputText
-        << ", "
-        << (cipherMode == CipherMode::Encrypt)
-        << ")"
-        << std::endl;
-    return inputText;
+    return outputText;
 }

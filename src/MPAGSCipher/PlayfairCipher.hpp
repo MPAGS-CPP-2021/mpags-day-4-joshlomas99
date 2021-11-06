@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <string>
 #include <vector>
+#include <map>
 
 /**
  * \file PlayfairCipher.hpp
@@ -19,7 +20,7 @@
 class PlayfairCipher {
   public:
     /**
-     * \brief Create a new PlayfairCipher, converting the given string into the key
+     * \brief Create a new PlayfairCipher, with the given string as the key
      *
      * \param key the string to be used as the key in the cipher
      */
@@ -39,18 +40,26 @@ class PlayfairCipher {
      * \param cipherMode whether to encrypt or decrypt the input text
      * \return the result of applying the cipher to the input text
      */
-    std::string applyCipher(const std::string& inputText,
+    std::string applyCipher(std::string& inputText,
                             const CipherMode cipherMode) const;
 
   private:
-    /// The alphabet - used to determine the cipher character given the plain character and the key
+    
     const std::string alphabet_{"ABCDEFGHIJKLMNOPQRSTUVWXYZ"};
+        ///< The alphabet - used to determine create the usable cipher key from the input string
 
-    /// The size of the alphabet
-    const std::size_t alphabetSize_{alphabet_.length()};
+    // Define labels for the types used in the letter <-> coord maps
+    using PlayfairCoords = std::pair< size_t, size_t >; ///< Used for storing pairs of coordinates (row, column)
+    using Letter2Coords = std::map< char, PlayfairCoords >; ///< Used for mapping letters onto corresponding coordinates
+    using Coords2Letter = std::map< PlayfairCoords, char >; ///< Used for mapping coordinates onto corresponding letters
 
-    /// The cipher key
-    std::string key_{0};
+    // Create an instance of each map
+    
+    Letter2Coords lookUpCoordinates_; ///< Map the look up coordinates of a given letter
+
+    Coords2Letter lookUpLetter_; ///< Map the look up letter at given coordinates
+
+    std::string key_{""}; ///< The cipher key
 };
 
 #endif

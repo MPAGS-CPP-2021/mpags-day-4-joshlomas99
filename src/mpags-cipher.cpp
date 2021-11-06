@@ -59,7 +59,7 @@ int main(int argc, char* argv[])
     // Like help, requires no further action,
     // so return from main with zero to indicate success
     if (settings.versionRequested) {
-        std::cout << "0.3.0" << std::endl;
+        std::cout << "0.4.0" << std::endl;
         return 0;
     }
 
@@ -100,8 +100,6 @@ int main(int argc, char* argv[])
             break;
         }
         case CipherType::Playfair: {
-            std::cerr << "[warning] Playfair cipher not yet implemented"
-                      << std::endl;
             // Run the Playfair cipher (using the specified key and encrypt/decrypt flag) on the input text
             PlayfairCipher cipher{settings.cipherKey};
             outputText = cipher.applyCipher(inputText, settings.cipherMode);
