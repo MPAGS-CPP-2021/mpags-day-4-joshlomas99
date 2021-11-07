@@ -86,7 +86,7 @@ std::string PlayfairCipher::applyCipher(std::string& inputText, const CipherMode
                 }
             }
         }
-        processedInputText += inputText[inputText.length()-1];
+        processedInputText += *(std::end(inputText)-1);
 
         // if the size of input is odd, add a trailing Z
         if (processedInputText.length() % 2 != 0) {
