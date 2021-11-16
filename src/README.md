@@ -51,7 +51,7 @@ executable can then be run directly, and provides the following command
 line options:
 ```
 $ ./mpags-cipher --help
-Usage: mpags-cipher [-i <file>] [-o <file>] [-k <key>] [--encrypt/--decrypt]
+Usage: mpags-cipher [-i <file>] [-o <file>] [-c <cipher>] [-k <key>] [--encrypt/--decrypt]
 
 Encrypts/Decrypts input alphanumeric text using classical ciphers
 
@@ -68,7 +68,7 @@ Available options:
                    Stdout will be used if not supplied
 
   -c CIPHER        Specify the cipher to be used to perform the encryption/decryption
-                   CIPHER can be caesar or playfair (not yet implemented) - caesar is the default
+                   CIPHER can be caesar or playfair - caesar is the default
 
   -k KEY           Specify the cipher KEY
                    A null key, i.e. no encryption, is used if not supplied
@@ -88,7 +88,6 @@ classical ciphers, it is transliterated using the following rules:
 - All other characters (punctuation) are discarded
 
 The results of this transliteration are then passed to the cipher.
-At present only the Caesar cipher is supported.
 
 The result of applying the cipher will then be written to stdout or to the
 file supplied with the `-o` option.
@@ -110,6 +109,8 @@ file supplied with the `-o` option.
     │   ├── CipherMode.hpp
     │   ├── CipherType.hpp
     │   ├── CMakeLists.txt
+    |   ├── PlayfairCipher.cpp
+    |   ├── PlayfairCipher.hpp
     │   ├── ProcessCommandLine.cpp
     │   ├── ProcessCommandLine.hpp
     │   ├── TransformChar.cpp
@@ -122,6 +123,7 @@ file supplied with the `-o` option.
         ├── testCaesarCipher.cpp
         ├── testCatch.cpp
         ├── testHello.cpp
+        ├── testPlayfairCipher.cpp
         ├── testProcessCommandLine.cpp
         └── testTransformChar.cpp
 ```
